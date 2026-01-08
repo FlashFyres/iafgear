@@ -66,20 +66,28 @@ public class ServerEvents {
     }
 
     @SubscribeEvent
-    public static void onEntityUpdate(LivingEvent.LivingTickEvent event) { // Changed from LivingUpdateEvent
-        ItemStack itemStack;
-        int amountEquipped = 0;
+public static void onEntityUpdate(LivingEvent.LivingTickEvent event) { // Changed from LivingUpdateEvent
 
-        for (EquipmentSlot e : EquipmentSlot.values()) {
-            itemStack = event.getEntity().getItemBySlot(e);
-            if (TraitHelper.getTraitLevel(itemStack, TIDE_GUARDIAN_TRAIT_RL) != 0) {
-                if (event.getEntity().isInWaterOrRain()) { // Changed from isWet()
-                    amountEquipped++;
-                }
+    // FIX: Only process players (ArmorStands and other non-players are skipped)
+    if (!(event.getEntity() instanceof Player)) {
+        return;
+    }
+
+    ItemStack itemStack;
+    int amountEquipped = 0;
+
+    for (EquipmentSlot e : EquipmentSlot.values()) {
+        itemStack = event.getEntity().getItemBySlot(e);
+        if (TraitHelper.getTraitLevel(itemStack, TIDE_GUARDIAN_TRAIT_RL) != 0) {
+            if (event.getEntity().isInWaterOrRain()) { // Changed from isWet()
+                amountEquipped++;
             }
         }
-        if (amountEquipped >= 1) {
-            event.getEntity().addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 50, amountEquipped - 1, false, false));
-        }
+    }
+
+    if (amountEquipped >= 1) {
+        event.getEntity().addEffect(
+            new MobEffectInstance(MobEffects.DAMAGE_BOOST, 50, amountEquipped - 1, false, false)
+        );
     }
 }
